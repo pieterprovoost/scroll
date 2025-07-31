@@ -4,6 +4,8 @@
 #' @name scroll
 "_PACKAGE"
 
+#' @import progress
+
 color_na <- function(text) {
   gsub("\\bNA\\b", "\033[38;5;244mNA\033[0m", text)
 }
@@ -29,8 +31,10 @@ scroll <- function(df) {
   tmpfile <- tempfile("scroll")
   on.exit(unlink(tmpfile))
   lines <- strsplit(knitr::kable(df, format = "simple"), "\n")
+  pb <- progress_bar$new(total = length(lines))
   for (i in seq_along(lines)) {
     lines[i] <- lines[i] |> color_numeric() |> color_na() |> color_bool()
+    pb$tick()
   }
   writeLines(as.character(lines), tmpfile)
   system(paste("less --header=1 -S -R", shQuote(tmpfile)))
